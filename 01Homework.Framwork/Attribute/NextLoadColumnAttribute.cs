@@ -10,7 +10,7 @@ namespace _01Homework.Framwork.Attribute
     public class NextLoadColumnAttribute : NextLoadBaseAttribute
     {
         private string columnName;
-        public override string Name
+        public string ColumnName
         {
             get { return columnName; }
         }
@@ -19,5 +19,9 @@ namespace _01Homework.Framwork.Attribute
             this.columnName = columnName;
         }
 
+        public override string GetName()
+        {
+            return ColumnName;
+        }
     }
 }

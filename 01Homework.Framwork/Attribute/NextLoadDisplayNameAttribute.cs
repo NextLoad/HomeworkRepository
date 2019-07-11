@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace _01Homework.Framwork.Attribute
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class NextLoadDisplayNameAttribute : System.Attribute
+    public class NextLoadDisplayNameAttribute : NextLoadBaseAttribute
     {
         private string displayName;
         public string DisplayName
@@ -21,6 +21,11 @@ namespace _01Homework.Framwork.Attribute
         public NextLoadDisplayNameAttribute(string displayName)
         {
             this.displayName = displayName;
+        }
+
+        public override string GetName()
+        {
+            return DisplayName;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace _01Homework.Framwork.Attribute
     public class NextLoadTableAttribute : NextLoadBaseAttribute
     {
         private string tableName;
-        public override string Name
+        public string TableName
         {
             get { return tableName; }
         }
@@ -19,5 +19,9 @@ namespace _01Homework.Framwork.Attribute
             this.tableName = tableName;
         }
 
+        public override string GetName()
+        {
+            return TableName;
+        }
     }
 }

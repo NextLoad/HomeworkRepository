@@ -8,6 +8,6 @@ namespace _01Homework.Framwork.Attribute
 {
     public abstract class NextLoadBaseAttribute : System.Attribute
     {
-        public abstract string Name { get; }
+        public abstract string GetName();
     }
 }

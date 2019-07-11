@@ -15,7 +15,7 @@ namespace _01Homework.Framwork.Extends
             if (member.IsDefined(typeof(NextLoadBaseAttribute), true))
             {
                 var nextLoadAttributes = (NextLoadBaseAttribute)member.GetCustomAttribute(typeof(NextLoadBaseAttribute));
-                return nextLoadAttributes.Name;
+                return nextLoadAttributes.GetName();
             }
             else
             {
