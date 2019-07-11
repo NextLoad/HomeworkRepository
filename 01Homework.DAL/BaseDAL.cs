@@ -21,10 +21,6 @@ namespace _01Homework.DAL
     public class BaseDAL : IBaseDAL
     {
         #region MyRegion
-
-
-
-
         //public  T Query(int id)
         //{
         //    T t = default(T);
@@ -188,10 +184,18 @@ namespace _01Homework.DAL
         //    return user;
         //}
         #endregion
+
+        /// <summary>
+        /// 根据主键Id查找
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public T Query<T>(int id) where T : BaseModel
         {
             T t = default(T);
             Type type = typeof(T);
+            //获取类型中所有的属性
             PropertyInfo[] properties = type.GetProperties();
 
             List<string> columnNames = new List<string>();
@@ -202,26 +206,35 @@ namespace _01Homework.DAL
 
             string columns = string.Join(",", columnNames.ToArray());
 
+            //拼装Sql语句
             string sqlTemplate = $"SELECT {columns} FROM [{type.GetName()}] WHERE ID=@Id";
 
-
+            //参数化
             DbParameter[] parameters = new[] { DBFactory.GetDbParameter(StaticConstant.Dbtype) };
             parameters[0].ParameterName = "@Id";
             parameters[0].Value = id;
 
-            DbDataReader DataReader = SqlHelper.ExecuteQuery(sqlTemplate, parameters);
-            if (DataReader.Read())
+            using (DbDataReader DataReader = SqlHelper.ExecuteQuery(sqlTemplate, parameters))
             {
-                t = Activator.CreateInstance<T>();
-                foreach (PropertyInfo property in properties)
+                //读取数据库
+                if (DataReader.Read())
                 {
-                    property.SetValue(t, DataReader[property.GetName()] is DBNull ? null : DataReader[property.GetName()]);
+                    t = Activator.CreateInstance<T>();
+                    //给每个属性赋值
+                    foreach (PropertyInfo property in properties)
+                    {
+                        property.SetValue(t, DataReader[property.GetName()] is DBNull ? null : DataReader[property.GetName()]);
+                    }
                 }
             }
-
             return t;
         }
 
+        /// <summary>
+        /// 查找单表所有记录
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public IList<T> Query<T>() where T : BaseModel
         {
             IList<T> IList = new List<T>();
@@ -238,20 +251,28 @@ namespace _01Homework.DAL
 
             string sqlTemplate = $"SELECT {columns} FROM [{type.GetName()}]";
 
-            DbDataReader dataReader = SqlHelper.ExecuteQuery(sqlTemplate);
-            while (dataReader.Read())
+            using (DbDataReader dataReader = SqlHelper.ExecuteQuery(sqlTemplate))
             {
-                T t = Activator.CreateInstance<T>();
-                foreach (PropertyInfo property in properties)
+                while (dataReader.Read())
                 {
-                    property.SetValue(t, dataReader[property.GetName()] is DBNull ? null : dataReader[property.GetName()]);
+                    T t = Activator.CreateInstance<T>();
+                    foreach (PropertyInfo property in properties)
+                    {
+                        property.SetValue(t, dataReader[property.GetName()] is DBNull ? null : dataReader[property.GetName()]);
+                    }
+                    IList.Add(t);
                 }
-                IList.Add(t);
             }
 
             return IList;
         }
 
+        /// <summary>
+        /// 插入一条数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <returns></returns>
         public int Insert<T>(T t) where T : BaseModel
         {
             Type type = t.GetType();
@@ -286,6 +307,12 @@ namespace _01Homework.DAL
             return SqlHelper.ExecuteNonQuery(sqlTemplate, parameters.ToArray());
         }
 
+        /// <summary>
+        /// 更新一条数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        /// <returns></returns>
         public int Update<T>(T t) where T : BaseModel
         {
             if (t == null)
@@ -298,7 +325,11 @@ namespace _01Homework.DAL
             {
                 return 0;
             }
-
+            //参数验证失败
+            if (!t.Valid(out string errorMsg))
+            {
+                throw new Exception(errorMsg);
+            }
             Type type = t.GetType();
             List<string> experssList = new List<string>();
             List<DbParameter> parameters = new List<DbParameter>();
@@ -327,6 +358,13 @@ namespace _01Homework.DAL
             return SqlHelper.ExecuteNonQuery(sqlTemplate, parameters.ToArray());
         }
 
+
+        /// <summary>
+        /// 删除一条数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public int Delete<T>(int id) where T : BaseModel
         {
             Type type = typeof(T);
